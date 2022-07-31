@@ -1,6 +1,7 @@
 require("dotenv").config();
 require("./config/database").connect();
 const express = require("express");
+const morgan = require('morgan');
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 
@@ -10,6 +11,8 @@ const auth = require("./middleware/auth");
 const app = express();
 
 app.use(express.json({ limit: "50mb" }));
+
+app.use(morgan('combined'));
 
 app.post("/register", async (req, res) => {
   try {
@@ -45,7 +48,7 @@ app.post("/register", async (req, res) => {
       { user_id: user._id, email },
       process.env.TOKEN_KEY,
       {
-        expiresIn: "2h",
+        expiresIn: 60,
       }
     );
     // save user token
@@ -85,8 +88,9 @@ app.post("/login", async (req, res) => {
 
       // user
       res.status(200).json(user);
+    } else {
+      res.status(400).send("Invalid Credentials");
     }
-    res.status(400).send("Invalid Credentials");
   } catch (err) {
     console.log(err);
   }
